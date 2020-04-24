@@ -1,4 +1,4 @@
-# nu-style
+https://github.com/jcjohnson/neural-style# nu-style
 Paper link: http://openaccess.thecvf.com/content_cvpr_2017/papers/Luan_Deep_Photo_Style_CVPR_2017_paper.pdf
 
 Codebase: https://github.com/luanfujun/deep-photo-styletransfer
@@ -6,7 +6,6 @@ Codebase: https://github.com/luanfujun/deep-photo-styletransfer
 
 <table>
 <tr><th> Features and Classifcations/Values for Reproduction</th><tr>
-<tr><td>
 | Feature | Classification/value|
 |:----------:|:-------------------------:| 
 | Year Published| 2017|
@@ -33,9 +32,7 @@ Codebase: https://github.com/luanfujun/deep-photo-styletransfer
 |Number Other Figures| 29|
 |Conceptualization Figures| |
 |Number of Authors| 4|
-</td><td>
-Here is a test of some text
-</td></tr></table>
+</td><td></table>
 
 
 Related Works
