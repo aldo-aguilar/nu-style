@@ -17,7 +17,7 @@ https://github.com/luanfujun/deep-photo-styletransfer<br/>
 |Algorithm Difficulty| Medium|
 |Pseudo Code| No|
 |Primary Topic|CV Style Transfer|
-|Exemplar Problem| |
+|Exemplar Problem| No|
 |Compute Needed| NVIDIA Titan X (GPU)|
 |Authors Reply| NA|
 |Code Available| Yes|
@@ -44,7 +44,9 @@ Tentative Timeline:
 
 * Week 8-9 Address the issue with the style term, which is that the Gram matrix is computed over the whole image. The approach taken in the paper is similar to that taken in the Neural Doodle paper (liked below). We will be using semantic segmentation to generate mask from the refrence image which will prevent "bleeding" of unwanted features. This will prevent a sky from bleeding into the output, or something similar where the refrence bleeds more than style into the output.
 
-* Week 9-10 Get everything working, set up hyper-parameters how the paper has, and double check the loss function in equation (4). This model is ready for GPU training. 
+* Week 9-10 Get everything working, set up hyper-parameters how the paper has, and double check the loss function in equation (4). This model is ready for GPU training. Hopefully achive results that transfer style (color and lighting) without image distortions. Here is a result from the paper.
+
+![alt text](https://raw.githubusercontent.com/luanfujun/deep-photo-styletransfer/master/examples/refine_posterization/refine_9.png) 
 
 Related Works  <br/>
 https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=34<br/>
