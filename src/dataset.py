@@ -17,7 +17,7 @@ Returns:
 
 def image_loader(image_name, imsize, device='cpu'):
     image = Image.open(image_name)
-    loader = transforms.Compose([transforms.Resize(imsize), transforms.ToTensor()])
+    loader = transforms.Compose([transforms.Resize((imsize, imsize)), transforms.ToTensor()])
     image = loader(image)
     print('Images shape initial', image.shape)
     image = image.unsqueeze(0)  # gets right dimension at particular size
@@ -37,6 +37,7 @@ def imshow(tensor, title=None):
     image = torch.squeeze(image)  # index 0 is the batch dimension
     unloader = transforms.ToPILImage()
     image = unloader(image)
+    plt.axis('off')
     plt.imshow(image)
     if not title:
         plt.title(title)
