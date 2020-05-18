@@ -9,7 +9,7 @@ import os
 def main():
     device = 'cpu'
     imsize = 128
-    os.chdir(os.path.dirname(os.getcwd()) + r'\images')
+    os.path.join(os.getpwd, 'images')
     if os.path.exists('img.pt'):
         tensor = torch.load('img.pt')
         imshow(tensor)
