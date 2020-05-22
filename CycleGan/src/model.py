@@ -3,7 +3,7 @@ import torch.nn as nn
 
 
 class Generator(nn.Module):
-    def __init__(self, color_channels=3):
+    def __init__(self, color_channels=3, resid_layers=6):
         super(Generator, self).__init__()
         self.main = nn.Sequential()
 
@@ -19,11 +19,8 @@ class Generator(nn.Module):
         self.main.add_module("batch_norm30", nn.BatchNorm2d(256))
         self.main.add_module("relu30", nn.ReLU(True))
 
-        # Based off https://towardsdatascience.com/overview-of-cyclegan-architecture-and-training-afee31612a2f
-        # for i in range(1):
-        #     self.main.add_module("conv3{}".format(i+1), nn.Conv2d(256, 256, 3, stride=2, padding=1))
-        #     self.main.add_module("batch_norm3{}".format(i+1), nn.BatchNorm2d(256))
-        #     self.main.add_module("relu3{}".format(i+1), nn.ReLU(True))
+        for i in range(resid_layers):
+            self.main.add_module("resid_block{}".format(i+1), ResidualBlock(256, i))
 
         self.main.add_module("conv4", nn.ConvTranspose2d(256, 128, 3, stride=2, padding=1, output_padding=1))
         self.main.add_module("batch_norm4", nn.BatchNorm2d(128))
@@ -34,6 +31,7 @@ class Generator(nn.Module):
         self.main.add_module("relu5", nn.ReLU(True))
 
         self.main.add_module("conv6", nn.Conv2d(64, color_channels, 7, stride=1, padding=3))
+        self.main.add_module("tanh", nn.Tanh())
 
     def forward(self, x):
         return self.main(x)
@@ -67,12 +65,26 @@ class Discriminator(nn.Module):
         return self.main(x)
 
 
+class ResidualBlock(nn.Module):
+
+    def __init__(self, features, index):
+        super(ResidualBlock, self).__init__()
+
+        self.main = nn.Sequential()
+        self.main.add_module("resid{}1".format(index + 1), nn.Conv2d(features, features, 3, stride=1, padding=1))
+        self.main.add_module("batch_norm_resid{}1".format(index + 1), nn.BatchNorm2d(features))
+        self.main.add_module("relu_resid{}".format(index + 1), nn.ReLU(True))
+        self.main.add_module("resid{}2".format(index + 1), nn.Conv2d(features, features, 3, stride=1, padding=1))
+        self.main.add_module("batch_norm_resid{}2".format(index + 1), nn.BatchNorm2d(features))
+
+    def forward(self, x):
+        return x + self.main(x)
+
+
 def weights_init(m):
     classname = m.__class__.__name__
     if classname.find('conv') != -1:
         nn.init.normal_(m.weight.data, 0.0, 0.02)
-        print('I called conv')
     elif classname.find('batch_norm') != -1:
         nn.init.normal_(m.weight.data, 1.0, 0.02)
         nn.init.constant_(m.bias.data, 0)
-        print('I called batch')
