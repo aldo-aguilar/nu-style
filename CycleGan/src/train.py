@@ -26,8 +26,10 @@ def main():
     genBA = m.Generator(color_channels=1)
     disA = m.Discriminator(color_channels=1)
 
-    real, rot = d.getData(batch_size, imsize)
+    # Data
+    real, rot = d.getSingleData(batch_size, imsize)
 
+    # Possible Quick Load
     os.chdir(os.path.dirname(os.getcwd()) + r'\images')
     if os.path.exists('img1.pt'):
         img1 = torch.load('img1.pt')
@@ -50,16 +52,17 @@ def main():
 
     os.chdir(os.path.dirname(os.getcwd()) + r'\src')
 
+    # Apply normalization
     genAB.apply(m.weights_init)
     genBA.apply(m.weights_init)
     disA.apply(m.weights_init)
     disB.apply(m.weights_init)
 
-    # Initialize BCELoss function
-    criterion = nn.BCELoss()
+    # Initialize Loss functions
+    criterion = nn.BCELoss()  # In paper, it's MSELoss; but we found its not the great, prolly good for large data
     cyclic = nn.L1Loss()
 
-    # Establish convention for real and fake labels during training
+    # Label representation (not tensors)
     real_label = 1
     fake_label = 0
 
@@ -74,15 +77,14 @@ def main():
     img_listB = []
 
     iters = 0
+    batch_size = int(batch_size/2)
 
     print("Starting Training Loop...")
-    # For each epoch
     for epoch in range(epochs):
 
         # Parameters
         A = real.to(device)
         B = rot.to(device)
-        batch_size = A.size(0)
         rlabel = torch.full((batch_size,), real_label, device=device)
         flabel = torch.full((batch_size,), fake_label, device=device)
 
@@ -138,16 +140,14 @@ def main():
         optimizerDA.step()
         optimizerDB.step()
 
-        # Output training stats
-        if epoch % (epochs/10) == 0:
+        if epoch % (epochs / 10) == 0:
             print('[%d/%d]\tLoss_DA: %.4f\tLoss_GBA: %.4f\tDA(x): %.4f\tDA(GBA(z)): %.4f / %.4f\tLoss_DB: '
                   '%.4f\tLoss_GAB: %.4f\tDB(x): %.4f\tDB(GAB(z)): %.4f / %.4f '
-                  % (epoch, epochs,  # i, len(real),
+                  % (epoch, epochs,
                      errDA.item(), errGBA.item(), DA_x, DA_GBA_z1, DA_GBA_z2,
                      errDB.item(), errGAB.item(), DB_x, DB_GAB_z1, DB_GAB_z2))
 
-        # Check how the generator is doing by saving G's output on fixed_noise
-        if (iters % (epochs/4) == 0) or (epoch == epochs - 1):
+        if (iters % (epochs / 4) == 0) or (epoch == epochs - 1):
             with torch.no_grad():
                 fakeB = genAB(A).detach().to(device)
                 fakeA = genBA(B).detach().to(device)
