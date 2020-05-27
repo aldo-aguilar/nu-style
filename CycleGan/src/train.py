@@ -340,5 +340,5 @@ def linear_test():
 
 
 if __name__ == '__main__':
-    # main()
-    linear_test()
+    main()
+    # linear_test()

@@ -2,12 +2,15 @@ import torch.nn as nn
 
 
 class GeneratorLinear(nn.Module):
-    def __init__(self, size=28, hidden=70):
+    def __init__(self, size=28, hidden=70, color_channels=1):
         super(GeneratorLinear, self).__init__()
         self.main = nn.Sequential()
 
+        self.main.add_module("conv1", nn.Conv2d(color_channels, 64, 7, stride=1, padding=3))
+        self.main.add_module("relu1", nn.ReLU(True))
+        self.main.add_module("conv6", nn.Conv2d(64, color_channels, 7, stride=1, padding=3))
         self.main.add_module("dense1", nn.Linear(size, hidden))
-        self.main.add_module("tanh", nn.ReLU(True))
+        self.main.add_module("relu2", nn.ReLU(True))
         self.main.add_module("dense2", nn.Linear(hidden, size))
         self.main.add_module("tanh", nn.Tanh())
 
