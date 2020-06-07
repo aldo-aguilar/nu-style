@@ -3,6 +3,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+import torchvision.transforms as transforms
+
 
 def _gram_matrix(x):
     a, b, c, d = x.size()
@@ -43,10 +45,33 @@ class Normalization(nn.Module):
 
 
 class ContentLoss(nn.Module):
-    def __init__(self, target, ):
+    def __init__(self, target):
         super(ContentLoss, self).__init__()
         self.target = target.detach()
 
     def forward(self, x):
         self.loss = F.mse_loss(x, self.target)
+        return x
+
+
+class StyleLossAug(nn.Module):
+    def __init__(self, target, style, content):
+        super(StyleLossAug, self).__init__()
+        shape = target.shape
+        transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize((shape[2], shape[3])), transforms.ToTensor()])
+        loader = lambda mask: transform(torch.squeeze(mask.int())).unsqueeze(0)
+        self.masks = []
+        for mask in content:
+            self.masks.append(loader(mask.detach()))
+        self.targets = []
+        for mask in style:
+            gram = _gram_matrix(target * loader(mask)).detach()
+            self.targets.append(gram)
+
+    def forward(self, x):
+        loss = 0
+        for mask, target in zip(self.masks, self.targets):
+            gram = _gram_matrix(x * mask.detach())
+            loss += F.mse_loss(gram, target.detach())
+        self.loss = loss
         return x

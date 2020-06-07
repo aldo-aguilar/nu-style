@@ -1,9 +1,15 @@
 # Any handlers during training
-import torch
 import torch.nn as nn
 import torch.optim as optim
 import copy
-from .model import Normalization, ContentLoss, StyleLoss
+from .model import Normalization, ContentLoss, StyleLossAug
+
+
+def regularization_grad(img, laplacian):
+    image = img.detach().numpy()
+    grad = laplacian.dot(image.reshape(-1, 3))
+    loss = (grad * image.reshape(-1, 3)).sum()
+    return loss, 2.0 * grad.reshape(image.shape)
 
 
 def get_input_optimizer(input_img):
@@ -12,8 +18,7 @@ def get_input_optimizer(input_img):
 
 
 def get_style_model_and_loss(cnn, normalization_mean, normalization_std,
-                             style_img, content_img, content_layers,
-                             style_layers, device='cpu'):
+                             style_img, content_img, style_layers, content_layers, style_masks, content_masks, device='cpu'):
     cnn = copy.deepcopy(cnn)
 
     # using the normalization class to normalize mean and std
@@ -54,12 +59,12 @@ def get_style_model_and_loss(cnn, normalization_mean, normalization_std,
         if name in style_layers:
             # adding to the style loss
             target_features = model(style_img).detach()
-            style_loss = StyleLoss(target_features)
+            style_loss = StyleLossAug(target_features, style_masks, content_masks)
             model.add_module(f'style_loss{number_of_conv}', style_loss)
             style_losses.append(style_loss)
     # trim off layers after the last content and style losses
     for i in range(len(model) - 1, -1, -1):
-        if isinstance(model[i], ContentLoss) or isinstance(model[i], StyleLoss):
+        if isinstance(model[i], ContentLoss) or isinstance(model[i], StyleLossAug):
             break
     model = model[:(i + 1)]
 
